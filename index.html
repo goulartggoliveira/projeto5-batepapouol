@@ -16,8 +16,32 @@
     <title>Chat da UOL</title>
   </head>
   <body>
+    <!-- TELA DE LOGIN -->
+
+    <div class="tela-inicial">
+      <img src="./imgs/logo 2.png" />
+      <input class="input-login" type="text" placeholder="Digite seu nome" />
+      <button onclick="enviarNome()">Entrar</button>
+      <div class="loading-screen invisible">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+      <span class="invisible">Entrando...</span>
+    </div>
+
     <!-- CORPO DO PROJETO -->
-    <div class="container">
+    <div class="container invisible">
+      <!--  -->
       <!-- TOPO DO PROJETO -->
       <div class="nav-bar">
         <img src="./imgs/logo 1.png" alt="logo 1 uol" />
@@ -26,13 +50,19 @@
       <!-- CHAT DE CONVERSA -->
       <div class="chat"></div>
       <div class="send-message">
-        <input type="text" placeholder="Escreva aqui..." />
+        <input
+          class="input-send-message"
+          type="text"
+          placeholder="Escreva aqui..."
+        />
         <span></span>
         <ion-icon
           name="paper-plane-outline"
           onclick="enviarMensagem()"
         ></ion-icon>
       </div>
+
+      <div class="scroll-folder"></div>
     </div>
     <!-- TELA LATERAL -->
     <div class="display-participant invisible">
@@ -50,7 +80,7 @@
         <div class="visibility">
           <div class="option public" onclick="selecionar(this)">
             <ion-icon name="lock-open"></ion-icon>
-            <span>Público</span>
+            <span>Public</span>
             <img src="./imgs/Vector.png" />
           </div>
           <div class="option reserved" onclick="selecionar(this)">
@@ -61,7 +91,6 @@
         </div>
       </div>
     </div>
-    <div class="scroll-folder"></div>
     <script src="https://unpkg.com/ionicons@5.4.0/dist/ionicons.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="./js/script.js"></script>

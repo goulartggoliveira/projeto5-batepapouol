@@ -9,18 +9,55 @@ let tipoMsg;
 
 // FUNÇÃO PARA CHAMAR O NOME
 
-let nome = prompt("Qual o seu nome?");
+let nome;
 
 function enviarNome() {
+  nome = document.querySelector(".input-login").value;
   const search = axios.post(
     "https://mock-api.driven.com.br/api/v6/uol/participants",
     { name: nome }
   );
-  search.then(buscarMensagens);
+  search.then(entrar);
   search.catch(tratarErro);
   buscarParticipantes();
 }
-enviarNome();
+
+// LOGIN
+
+function entrar() {
+  buscarMensagens();
+  const input = document.querySelector(".input-login");
+  const text = document.querySelector(".tela-inicial span");
+  const loading = document.querySelector(".loading-screen");
+  const butao = document.querySelector("button");
+  input.classList.add("invisible");
+  butao.classList.add("invisible");
+  loading.classList.remove("invisible");
+  text.classList.remove("invisible");
+  setInterval(mudarTela, 3000);
+  setInterval(manterConectado, 5000);
+}
+
+// MUDAR A TELA
+
+function mudarTela() {
+  document.querySelector(".tela-inicial").classList.add("invisible");
+  document.querySelector(".container").classList.remove("invisible");
+}
+
+function manterConectado() {
+  axios.post("https://mock-api.driven.com.br/api/v6/uol/status", {
+    name: nome,
+  });
+}
+
+// NOMES-REPETIDOS
+
+function tratarErro(erro) {
+  if (erro.response.status === 400) {
+    alert("Nome já em uso!!");
+  }
+}
 
 // FUNÇÕES DE BUSCAS
 
@@ -48,7 +85,6 @@ function mostrarMensagens(resposta) {
   chat.innerHTML = "";
   for (let i = 0; i < listMsgs.length; i++) {
     const msg = listMsgs[i];
-
     if (msg.to === "Todos" || msg.to === nome || msg.from === nome) {
       if (msg.type === "status") {
         chat.innerHTML += `
@@ -61,7 +97,7 @@ function mostrarMensagens(resposta) {
         chat.innerHTML += `
                 <div class="message-box ${msg.type}">
                     <span class="hour">(${msg.time})</span>
-                    <span class="user-name">${msg.from}</span> para <span class="remetente">${msg.to}:</span>
+                    <span class="user-name">${msg.from}</span> para <span class="sender">${msg.to}:</span>
                     <span class="message">${msg.text}</span>
                     </div>`;
       }
@@ -74,29 +110,25 @@ function mostrarParticipantes(resposta) {
   const participantOnline = document.querySelector(".participant-online");
   for (let i = 0; i < listParticipantes.length; i++) {
     const participante = listParticipantes[i];
-    if (listParticipantesAux.indexOf(participante.name) == -1) {
+    if (document.getElementById(`${participante.name}`) === null) {
       participantOnline.innerHTML += ` 
-            <div class="person" onclick="selecionar(this)">
+            <div class="person" id="${participante.name}" onclick="selecionar(this)">
                 <ion-icon name="person-circle"></ion-icon>
                 <span>${participante.name}</span>
-                <img class="check" src="/projeto5-batePapoUOL/imgs/Vector.png">
+                <img class="check" src="./imgs/Vector.png">
             </div>`;
-      listParticipantesAux.push(participante.name);
     }
   }
-}
 
-function manterConectado() {
-  axios.post("https://mock-api.driven.com.br/api/v6/uol/status", {
-    name: nome,
-  });
-}
-
-function tratarErro(erro) {
-  console.log(erro.response);
-  if (erro.response.status === 400) {
-    nome = prompt("Esse nome já está em uso, por favor digite outro.");
-    enviarNome();
+  let participantesAtivos = listParticipantes.map(
+    (participante) => participante.name
+  );
+  let listPessoas = document.querySelectorAll(".person");
+  for (let i = 1; i < listPessoas.length; i++) {
+    if (participantesAtivos.indexOf(listPessoas[i].getAttribute("id")) === -1) {
+      let elemento = listPessoas[i];
+      elemento.parentNode.removeChild(elemento);
+    }
   }
 }
 
@@ -104,8 +136,8 @@ function tratarErro(erro) {
 
 function enviarMensagem() {
   verificaTipoMsg();
-  const texto = document.querySelector("input").value;
-  document.querySelector("input").value = "";
+  const texto = document.querySelector(".input-send-message").value;
+  document.querySelector(".input-send-message").value = "";
   let mensagem = {
     from: nome,
     to: destinatario,
@@ -121,7 +153,7 @@ function enviarMensagem() {
   search.catch((erro) => window.location.reload());
 }
 
-// MENY LATERAL
+// MENu LATERAL
 
 function abrirMenuLateral() {
   const telaParticipantes = document.querySelector(".display-participant");
@@ -168,7 +200,7 @@ function selecionar(elemento) {
   verificaTipoMsg();
 }
 function verificaTipoMsg() {
-  const frase = document.querySelector(".message span");
+  const frase = document.querySelector(".send-message span");
   if (pessoaSelecionada != "" && visibilidadeSelecionada != "") {
     frase.innerHTML = `Enviando para ${pessoaSelecionada} (${visibilidadeSelecionada})`;
     destinatario = pessoaSelecionada;
@@ -184,5 +216,4 @@ function verificaTipoMsg() {
   }
 }
 setInterval(buscarMensagens, 3000);
-setInterval(manterConectado, 5000);
 setInterval(buscarParticipantes, 10000);
