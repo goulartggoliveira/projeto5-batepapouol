@@ -1,0 +1,188 @@
+// VARIÁVEI GLOLBAIS
+let listMsgs = [];
+let listParticipantes = [];
+let listParticipantesAux = [];
+let pessoaSelecionada = ``;
+let visibilidadeSelecionada = "";
+let destinatario;
+let tipoMsg;
+
+// FUNÇÃO PARA CHAMAR O NOME
+
+let nome = prompt("Qual o seu nome?");
+
+function enviarNome() {
+  const search = axios.post(
+    "https://mock-api.driven.com.br/api/v6/uol/participants",
+    { name: nome }
+  );
+  search.then(buscarMensagens);
+  search.catch(tratarErro);
+  buscarParticipantes();
+}
+enviarNome();
+
+// FUNÇÕES DE BUSCAS
+
+function buscarParticipantes() {
+  let search = axios.get(
+    "https://mock-api.driven.com.br/api/v6/uol/participants"
+  );
+  search.then(mostrarMensagens);
+  search.catch((erro) => console.log(erro.response.data));
+}
+
+function buscarMensagens() {
+  let search = axios.get("https://mock-api.driven.com.br/api/v6/uol/messages");
+  search.then(mostrarMensagens);
+  search.catch((erro) => console.log(erro.response.data));
+  const showOnDisplay = document.querySelector(".scroll-folder");
+  showOnDisplay.scrollIntoView();
+}
+
+// FUNÇÕES DE SHOW UP
+
+function mostrarMensagens(resposta) {
+  listMsgs = resposta.data;
+  const chat = document.querySelector(".chat");
+  chat.innerHTML = "";
+  for (let i = 0; i < listMsgs.length; i++) {
+    const msg = listMsgs[i];
+
+    if (msg.to === "Todos" || msg.to === nome || msg.from === nome) {
+      if (msg.type === "status") {
+        chat.innerHTML += `
+                    <div class="message-box ${msg.type}">
+                        <span class="hour">(${msg.time})</span>
+                        <span class="user-name">${msg.from}</span>
+                        <span class="message">${msg.text}</span>
+                    </div>`;
+      } else {
+        chat.innerHTML += `
+                <div class="message-box ${msg.type}">
+                    <span class="hour">(${msg.time})</span>
+                    <span class="user-name">${msg.from}</span> para <span class="remetente">${msg.to}:</span>
+                    <span class="message">${msg.text}</span>
+                    </div>`;
+      }
+    }
+  }
+}
+
+function mostrarParticipantes(resposta) {
+  listParticipantes = resposta.data;
+  const participantOnline = document.querySelector(".participant-online");
+  for (let i = 0; i < listParticipantes.length; i++) {
+    const participante = listParticipantes[i];
+    if (listParticipantesAux.indexOf(participante.name) == -1) {
+      participantOnline.innerHTML += ` 
+            <div class="person" onclick="selecionar(this)">
+                <ion-icon name="person-circle"></ion-icon>
+                <span>${participante.name}</span>
+                <img class="check" src="/projeto5-batePapoUOL/imgs/Vector.png">
+            </div>`;
+      listParticipantesAux.push(participante.name);
+    }
+  }
+}
+
+function manterConectado() {
+  axios.post("https://mock-api.driven.com.br/api/v6/uol/status", {
+    name: nome,
+  });
+}
+
+function tratarErro(erro) {
+  console.log(erro.response);
+  if (erro.response.status === 400) {
+    nome = prompt("Esse nome já está em uso, por favor digite outro.");
+    enviarNome();
+  }
+}
+
+// FUNÇÕES ENVIAR MSG
+
+function enviarMensagem() {
+  verificaTipoMsg();
+  const texto = document.querySelector("input").value;
+  document.querySelector("input").value = "";
+  let mensagem = {
+    from: nome,
+    to: destinatario,
+    text: texto,
+    type: tipoMsg,
+  };
+  const search = axios.post(
+    `https://mock-api.driven.com.br/api/v6/uol/messages`,
+    mensagem
+  );
+
+  search.then(buscarMensagens);
+  search.catch((erro) => window.location.reload());
+}
+
+// MENY LATERAL
+
+function abrirMenuLateral() {
+  const telaParticipantes = document.querySelector(".display-participant");
+  telaParticipantes.classList.toggle("invisible");
+  verificaTipoMsg();
+}
+function selecionar(elemento) {
+  elemento.classList.toggle("selecionado");
+  if (elemento.classList.contains("person") === true) {
+    let listPessoasSelecionados = document.querySelectorAll(
+      ".person.selecionado"
+    );
+    for (let i = 0; i < listPessoasSelecionados.length; i++) {
+      const selecionado = listPessoasSelecionados[i];
+      if (selecionado !== elemento) {
+        selecionado.classList.remove("selecionado");
+      }
+    }
+    if (listPessoasSelecionados.length != 0) {
+      pessoaSelecionada = document.querySelector(
+        ".person.selecionado span"
+      ).innerHTML;
+    } else {
+      pessoaSelecionada = "";
+    }
+  } else {
+    let listOpcoesSelecionados = document.querySelectorAll(
+      ".option.selecionado"
+    );
+    for (let i = 0; i < listOpcoesSelecionados.length; i++) {
+      const selecionado = listOpcoesSelecionados[i];
+      if (selecionado !== elemento) {
+        selecionado.classList.remove("selecionado");
+      }
+    }
+    if (listOpcoesSelecionados.length != 0) {
+      visibilidadeSelecionada = document.querySelector(
+        ".option.selecionado span"
+      ).innerHTML;
+    } else {
+      visibilidadeSelecionada = "";
+    }
+  }
+  verificaTipoMsg();
+}
+function verificaTipoMsg() {
+  const frase = document.querySelector(".message span");
+  if (pessoaSelecionada != "" && visibilidadeSelecionada != "") {
+    frase.innerHTML = `Enviando para ${pessoaSelecionada} (${visibilidadeSelecionada})`;
+    destinatario = pessoaSelecionada;
+    if (visibilidadeSelecionada === "Reserve") {
+      tipoMsg = "private_message";
+    } else {
+      tipoMsg = "message";
+    }
+  } else {
+    destinatario = "Todos";
+    tipoMsg = "message";
+    frase.innerHTML = "";
+  }
+}
+setInterval(buscarMensagens, 3000);
+setInterval(manterConectado, 5000);
+setInterval(buscarParticipantes, 10000);

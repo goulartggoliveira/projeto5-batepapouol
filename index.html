@@ -21,16 +21,49 @@
       <!-- TOPO DO PROJETO -->
       <div class="nav-bar">
         <img src="./imgs/logo 1.png" alt="logo 1 uol" />
-        <ion-icon name="people"></ion-icon>
+        <ion-icon name="people" onclick="abrirMenuLateral()"></ion-icon>
       </div>
       <!-- CHAT DE CONVERSA -->
       <div class="chat"></div>
-      <div class="messege">
+      <div class="send-message">
         <input type="text" placeholder="Escreva aqui..." />
-        <ion-icon name="paper-plane-outline"></ion-icon>
+        <span></span>
+        <ion-icon
+          name="paper-plane-outline"
+          onclick="enviarMensagem()"
+        ></ion-icon>
       </div>
     </div>
+    <!-- TELA LATERAL -->
+    <div class="display-participant invisible">
+      <div class="back-image" onclick="abrirMenuLateral()"></div>
+      <div class="side-menu">
+        <span>Escolha um contato para enviar mensagem:</span>
+        <div class="participant-online">
+          <div class="person" onclick="selecionar(this)">
+            <ion-icon name="people"></ion-icon>
+            <span>Todos</span>
+            <img src="./imgs/Vector.png" />
+          </div>
+        </div>
+        <span>Escolha a visibilidade:</span>
+        <div class="visibility">
+          <div class="option public" onclick="selecionar(this)">
+            <ion-icon name="lock-open"></ion-icon>
+            <span>Público</span>
+            <img src="./imgs/Vector.png" />
+          </div>
+          <div class="option reserved" onclick="selecionar(this)">
+            <ion-icon name="lock-closed"></ion-icon>
+            <span>Reserve</span>
+            <img src="./imgs/Vector.png" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-folder"></div>
     <script src="https://unpkg.com/ionicons@5.4.0/dist/ionicons.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="./js/script.js"></script>
   </body>
 </html>
